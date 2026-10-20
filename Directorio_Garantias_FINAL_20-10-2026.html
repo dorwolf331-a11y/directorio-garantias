@@ -1,0 +1,2431 @@
+<html lang="es"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IVOO - Directorio de Garantías</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg: #e0e5ec;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --accent: #00cfc1;
+            --accent-dark: #00b8aa;
+            --text-main: #4a5568;
+            --text-light: #718096;
+            
+            --neu-flat: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+            --neu-inset: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+            --neu-pressed: inset 9px 9px 16px var(--shadow-dark), inset -9px -9px 16px var(--shadow-light);
+            --neu-button: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2.5rem 1.5rem;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        header { text-align: center; margin-bottom: 3.5rem; }
+
+        .logo-container {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 3.5rem;
+            background: var(--bg);
+            border-radius: 50px;
+            box-shadow: var(--neu-flat);
+        }
+        
+        .ivo-logo {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -1px;
+            display: flex;
+            gap: 2px;
+        }
+
+        .logo-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+
+        /* SEARCH AREA */
+        .controls-area {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 3.5rem;
+            align-items: center;
+        }
+
+        .search-wrapper { position: relative; flex: 1; }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 1.2rem 1.5rem 1.2rem 3.5rem;
+            border: none;
+            border-radius: 100px;
+            background: var(--bg);
+            box-shadow: var(--neu-inset);
+            font-size: 1.1rem;
+            outline: none;
+            color: var(--text-main);
+            font-family: inherit;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .action-btns { display: flex; gap: 1rem; }
+
+        .btn-circle {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: none;
+            box-shadow: var(--neu-button);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            transition: all 0.2s;
+        }
+
+        .btn-circle:hover { transform: scale(0.98); }
+        .btn-circle:active { box-shadow: var(--neu-pressed); transform: scale(0.95); }
+        .btn-circle.excel { color: #217346; }
+        .btn-circle.help { color: #4a5568; }
+
+        /* TOOLTIPS */
+        [data-tooltip] { position: relative; }
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.5rem 1rem;
+            background: var(--text-main);
+            color: #fff;
+            font-size: 0.75rem;
+            border-radius: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+        [data-tooltip]:hover::after { opacity: 1; visibility: visible; }
+
+        .btn-delete {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: none;
+            box-shadow: var(--neu-button);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            transition: all 0.2s;
+            position: absolute;
+            right: 2.5rem;
+            top: 2.5rem;
+        }
+
+        .btn-delete:hover { color: #e53e3e; transform: scale(1.1); }
+        .btn-delete:active { box-shadow: var(--neu-pressed); transform: scale(0.9); }
+
+        .btn-edit {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: none;
+            box-shadow: var(--neu-button);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            transition: all 0.2s;
+            position: absolute;
+            right: 5.5rem;
+            top: 2.5rem;
+        }
+
+        .btn-edit:hover { color: var(--accent); transform: scale(1.1); }
+        .btn-edit:active { box-shadow: var(--neu-pressed); transform: scale(0.9); }
+
+        /* RESULTS */
+        .results-grid { display: grid; gap: 2.5rem; }
+
+        .card {
+            background: var(--bg);
+            border-radius: 40px;
+            padding: 2.5rem;
+            box-shadow: var(--neu-flat);
+            position: relative;
+        }
+
+        .brand-name {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        .warranty-badges { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 2rem; }
+
+        .badge {
+            padding: 0.6rem 1.2rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: var(--neu-inset);
+            color: var(--accent-dark);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .info-item {
+            padding: 1.5rem;
+            background: var(--bg);
+            border-radius: 25px;
+            box-shadow: inset 4px 4px 8px rgba(163, 177, 198, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.6);
+        }
+
+        .info-item h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-item p { font-size: 1rem; font-weight: 500; }
+
+        .contact-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .contact-list li {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(163, 177, 198, 0.4);
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        .contact-list li:last-child {
+            border-bottom: none;
+        }
+        .contact-list li strong {
+            color: var(--accent-dark);
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        /* DETAILED TABLE */
+        .table-container {
+            margin-top: 2.5rem;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: var(--neu-inset);
+            padding: 0.8rem;
+        }
+
+        .detailed-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        .detailed-table th {
+            text-align: left;
+            padding: 0.8rem 1.2rem;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .detailed-table td { background: var(--bg); padding: 1rem; box-shadow: var(--neu-button); font-size: 0.95rem; }
+        .detailed-table td:first-child { border-radius: 12px 0 0 12px; font-weight: 600; }
+        .detailed-table td:last-child { border-radius: 0 12px 12px 0; color: var(--accent-dark); font-weight: 600; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(224, 229, 236, 0.9);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; z-index: 100; transition: 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal {
+            background: var(--bg); padding: 3rem; border-radius: 40px;
+            width: 90%; max-width: 500px; box-shadow: var(--neu-flat);
+        }
+
+        .input-group { margin-bottom: 1.5rem; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-light); }
+        .input-group input {
+            width: 100%; padding: 0.9rem 1.2rem; border: none; border-radius: 15px;
+            background: var(--bg); box-shadow: var(--neu-inset); outline: none; font-family: inherit;
+        }
+
+        .btn-rect {
+            padding: 0.8rem 2rem; border-radius: 15px; background: var(--bg);
+            border: none; box-shadow: var(--neu-button); font-weight: 700; cursor: pointer;
+        }
+        .btn-rect.save { color: var(--accent); margin-left:10px; }
+
+        .empty-state { text-align: center; padding: 4rem; color: var(--text-light); background: var(--bg); border-radius: 30px; box-shadow: var(--neu-inset); }
+
+        /* CONTACT TYPE TOGGLE */
+        .contact-toggle { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .toggle-btn {
+            flex: 1; padding: 0.6rem 1rem; border-radius: 12px; border: none;
+            background: var(--bg); box-shadow: var(--neu-button); cursor: pointer;
+            font-family: inherit; font-size: 0.8rem; font-weight: 700;
+            color: var(--text-light); transition: all 0.2s;
+        }
+        .toggle-btn.active { box-shadow: var(--neu-inset); color: var(--accent); }
+
+        /* BRANCH ROWS */
+        .branch-list { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 0.8rem; }
+        .branch-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: center; }
+        .branch-row input {
+            width: 100%; padding: 0.7rem 1rem; border: none; border-radius: 12px;
+            background: var(--bg); box-shadow: var(--neu-inset); outline: none;
+            font-family: inherit; font-size: 0.85rem; color: var(--text-main);
+        }
+        .btn-remove-branch {
+            width: 30px; height: 30px; border-radius: 50%; background: var(--bg);
+            border: none; box-shadow: var(--neu-button); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-light); transition: all 0.2s; flex-shrink: 0;
+        }
+        .btn-remove-branch:hover { color: #e53e3e; }
+        .btn-add-branch {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem;
+            border-radius: 12px; background: var(--bg); border: none;
+            box-shadow: var(--neu-button); cursor: pointer; font-family: inherit;
+            font-size: 0.8rem; font-weight: 700; color: var(--accent); transition: all 0.2s;
+        }
+        .btn-add-branch:active { box-shadow: var(--neu-inset); }
+
+        @media (max-width: 650px) {
+            .controls-area { flex-direction: column; }
+            .action-btns { width: 100%; justify-content: center; }
+            .brand-name { font-size: 1.8rem; }
+        }
+
+        /* SPLASH TUTORIAL */
+        .tutorial-step { display: none; text-align: center; }
+        .tutorial-step.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .step-icon {
+            width: 70px; height: 70px; border-radius: 50%; background: var(--bg);
+            box-shadow: var(--neu-button); display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem; color: var(--accent);
+        }
+        .step-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-main); }
+        .step-desc { color: var(--text-light); font-size: 0.95rem; margin-bottom: 2rem; }
+        
+        .tutorial-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+        .dots { display: flex; gap: 8px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--shadow-dark); transition: 0.3s; }
+        .dot.active { width: 24px; border-radius: 4px; background: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="ivo-logo">IVO<span>O</span></div>
+                <p class="logo-subtitle">Portal de Garantías</p>
+            </div>
+        </header>
+
+        <div class="controls-area">
+            <div class="search-wrapper">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Buscar marca o producto...">
+            </div>
+            <div class="action-btns">
+                <button class="btn-circle help" onclick="openTutorial()" data-tooltip="Ayuda / Tutorial">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </button>
+                <button class="btn-circle excel" onclick="exportToExcel()" data-tooltip="Exportar a Excel">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </button>
+                <button class="btn-circle" onclick="generateShareableVersion()" data-tooltip="Guardar Cambios en Archivo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                </button>
+                <button class="btn-circle" onclick="checkAuth()" data-tooltip="Agregar Nueva Marca">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="results" class="results-grid">
+                    <div class="card">
+                        <button class="btn-edit" onclick="editBrand('HOTWAV')" title="Editar Registro">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        <button class="btn-delete" onclick="deleteBrand('HOTWAV')" title="Eliminar Registro">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                        <div class="card-header">
+                            <h3 class="brand-name">HOTWAV</h3>
+                            <div class="warranty-badges">
+                                <div class="badge">Tienda: 7 DIAS (CAMBIO INMEDIATO)</div>
+                                <div class="badge">Marca: (6 MESES DE GARANTIA POR TIENDA EN CUANTO A RMA)</div>
+                            </div>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <h4>Soporte y Contacto</h4>
+                                <ul class="contact-list"><li><strong>Caracas (City Cell Store):</strong> +58 412-5463043</li><li><strong>Soporte Global Hotwav:</strong> support@hotwav.com</li><li><strong>Plataforma Web Oficial:</strong> Soporte HOTWAV Latam</li></ul>
+                            </div>
+                            <div class="info-item">
+                                <h4>Tipo de Marca</h4>
+                                <p>Distribución Externa</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" style="max-width:580px; max-height:90vh; overflow-y:auto;">
+            <h2 id="modalTitle" style="margin-bottom: 2rem; text-align: center;">Editar Marca</h2>
+            <form id="brandForm" onsubmit="saveBrand(event)">
+                <div class="input-group">
+                    <label>Nombre de la Marca</label>
+                    <input type="text" id="m-name" required="">
+                </div>
+                <div class="input-group">
+                    <label>Garantía Tienda</label>
+                    <input type="text" id="m-store">
+                </div>
+                <div class="input-group">
+                    <label>Garantía Marca</label>
+                    <input type="text" id="m-brand">
+                </div>
+                <!-- CONTACT SECTION -->
+                <div class="input-group">
+                    <label>Tipo de Contacto</label>
+                    <div class="contact-toggle">
+                        <button type="button" class="toggle-btn" id="toggleSimple" onclick="setContactMode('simple')">📝 Simple</button>
+                        <button type="button" class="toggle-btn active" id="toggleBranches" onclick="setContactMode('branches')">🏢 Por Sucursal / Agente</button>
+                    </div>
+                    <!-- Simple mode -->
+                    <div id="contactSimple" style="display: none;">
+                        <input type="text" id="m-obs" placeholder="Teléfono, web o nota...">
+                    </div>
+                    <!-- Branches mode -->
+                    <div id="contactBranches" style="display: block;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:0.5rem; margin-bottom:0.4rem; padding: 0 0 0 0;">
+                            <span style="font-size:0.75rem; font-weight:700; color:var(--text-light); padding-left:4px;">CIUDAD / AGENTE</span>
+                            <span style="font-size:0.75rem; font-weight:700; color:var(--text-light); padding-left:4px;">TELÉFONO</span>
+                            <span></span>
+                        </div>
+                        <div class="branch-list" id="branchList"><div class="branch-row">
+                <input type="text" placeholder="Ej: VALENCIA (Alaservice)" value="Caracas (City Cell Store)">
+                <input type="text" placeholder="Ej: (+58) 241-8357376" value="+58 412-5463043">
+                <button type="button" class="btn-remove-branch" onclick="this.parentElement.remove()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div><div class="branch-row">
+                <input type="text" placeholder="Ej: VALENCIA (Alaservice)" value="Soporte Global Hotwav">
+                <input type="text" placeholder="Ej: (+58) 241-8357376" value="support@hotwav.com">
+                <button type="button" class="btn-remove-branch" onclick="this.parentElement.remove()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div><div class="branch-row">
+                <input type="text" placeholder="Ej: VALENCIA (Alaservice)" value="Plataforma Web Oficial">
+                <input type="text" placeholder="Ej: (+58) 241-8357376" value="Soporte HOTWAV Latam">
+                <button type="button" class="btn-remove-branch" onclick="this.parentElement.remove()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div></div>
+                        <button type="button" class="btn-add-branch" onclick="addBranchRow()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Añadir Sucursal / Agente
+                        </button>
+                    </div>
+                </div>
+                <div style="text-align: right; margin-top: 2rem;">
+                    <button type="button" class="btn-rect" onclick="closeModal()">CANCELAR</button>
+                    <button type="submit" class="btn-rect save">GUARDAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Tutorial (Splash) -->
+    <div class="modal-overlay" id="tutorialOverlay">
+        <div class="modal" style="max-width: 450px;">
+            <div id="stepsContainer">
+                <div class="tutorial-step active" data-step="0">
+                    <div class="step-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </div>
+                    <div class="step-title">Buscar Marcas</div>
+                    <div class="step-desc">Escribe el nombre de cualquier marca en la barra de búsqueda para ver sus tiempos de garantía al instante.</div>
+                </div>
+                <div class="tutorial-step" data-step="1">
+                    <div class="step-icon" style="color: #217346;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    </div>
+                    <div class="step-title">Descargar Reporte</div>
+                    <div class="step-desc">Usa el botón verde de Excel para descargar toda la base de datos organizada en un archivo descargable.</div>
+                </div>
+                <div class="tutorial-step" data-step="2">
+                    <div class="step-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </div>
+                    <div class="step-title">Gestión Administrativa</div>
+                    <div class="step-desc">Pulsa el botón <b>+</b> para agregar marcas. Se requiere <b>Contraseña Maestra</b> para acceso administrativo.</div>
+                </div>
+                <div class="tutorial-step" data-step="3">
+                    <div class="step-icon" style="color: #e53e3e;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </div>
+                    <div class="step-title">Eliminar Registros</div>
+                    <div class="step-desc">Si un dato es incorrecto, pulsa el ícono de basura en la tarjeta. Se te pedirá la <b>Contraseña Maestra</b> para confirmar.</div>
+                </div>
+            </div>
+
+            <div class="tutorial-nav">
+                <button class="btn-rect" id="prevStep" onclick="navStep(-1)" style="visibility: hidden;">Anterior</button>
+                <div class="dots">
+                    <div class="dot active"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <button class="btn-rect save" id="nextStep" onclick="navStep(1)">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PASS_H = "U0lOUEVMMTIz"; // Base64 encoded password
+        const PASS = atob(PASS_H);
+        let db = [];
+        let propias = {};
+        let editingBrandName = null;
+
+        const rawData = {
+  "general": [
+    {
+      "name": "HOTWAV",
+      "storeWarranty": "7 DIAS (CAMBIO INMEDIATO)",
+      "brandWarranty": "(6 MESES DE GARANTIA POR TIENDA EN CUANTO A RMA)",
+      "contact": "Caracas (City Cell Store): +58 412-5463043 | Soporte Global Hotwav: support@hotwav.com | Plataforma Web Oficial: Soporte HOTWAV Latam"
+    },
+    {
+      "name": "SIRAGON",
+      "storeWarranty": "15 DIAS",
+      "brandWarranty": "Entre 6 meses y 1 año de acuerdo al producto",
+      "contact": "MARCA PROPIA (SIRAGON, SONEVIEW, ACCI) Los tiempos varian según el producto"
+    },
+    {
+      "name": "SONEVIEW",
+      "storeWarranty": "15 DIAS",
+      "brandWarranty": "Entre 1 año y 3 meses de acuerdo al producto",
+      "contact": "nan"
+    },
+    {
+      "name": "ACCI",
+      "storeWarranty": "15 DIAS",
+      "brandWarranty": "VARIA SEGÚN EL PRODUCTO",
+      "contact": "PROTECTORES ACCI 1 AÑO DE GARANTIA POR TIENDA"
+    },
+    {
+      "name": "HUAWEI",
+      "storeWarranty": "-",
+      "brandWarranty": "-",
+      "contact": "LINEA DIRECTA 900 483 303 (9:00 - 18:00) // WS +34661270413 (9:00 - 18:00)"
+    },
+    {
+      "name": "MOTOROLA",
+      "storeWarranty": "-",
+      "brandWarranty": "-",
+      "contact": "GLOBAL FIX - CARACAS  (0414-2854884)"
+    },
+    {
+      "name": "XIAOMI",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "3 meses que seran cubiertos por sinpel / Solo TV, Monitores Y Accesorios dispone de garantia",
+      "contact": "CARACAS (GLOBAL FIX): 0414-2854884"
+    },
+    {
+      "name": "SAMSUNG",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 AÑO DE GARANTÍA CON LA MARCA",
+      "contact": "Centro se Servicio 0800 - SAMSUNG (0-800-100-5303)"
+    },
+    {
+      "name": "LG",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 AÑO DE GARANTÍA CON LA MARCA",
+      "contact": "Contactar soporte LG ( 0800 - 1005318)"
+    },
+    {
+      "name": "A&C",
+      "storeWarranty": "-",
+      "brandWarranty": "-",
+      "contact": "VALENCIA (AC & Servicio Técnico Electrodomésticos): (+58) 412-2057448"
+    },
+    {
+      "name": "DELL",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "https://www.dell.com/support/contents/es-ve/category/contact-information?~ck=mn"
+    },
+    {
+      "name": "HP",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "0212-3357771 / 0800-1362585"
+    },
+    {
+      "name": "SAMSUNG PC",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "TELEFONIA SIN GARANTIA"
+    },
+    {
+      "name": "SONY",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "Contactar soporte (+58) 212-6611861"
+    },
+    {
+      "name": "VIOTTO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "VARIA SEGÚN EL PRODUCTO",
+      "contact": "Contactar soporte 0800 - VIOTTO (0800 - 8468867)"
+    },
+    {
+      "name": "MABE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "Contactar soporte (0800-1362631) / (0212)3357605"
+    },
+    {
+      "name": "GPULS",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "VARIA SEGÚN EL PRODUCTO",
+      "contact": "Contactar soporte (0800 8468867)"
+    },
+    {
+      "name": "EPSON",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "Contactar soporte (+58 0212)240-1111"
+    },
+    {
+      "name": "JBL",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "7 DIAS",
+      "contact": "Consultar pestaña"
+    },
+    {
+      "name": "LINKSYS",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "Soporte (0800 1 00 4591)"
+    },
+    {
+      "name": "DAEWOO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "Contactar soporte (0212-7627448)"
+    },
+    {
+      "name": "HAMILTON BEACH",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "Consultar pestaña"
+    },
+    {
+      "name": "ANKER",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "BELKIN",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "ILUV",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "GENERICO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "OVEVO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "TOSHIBA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "PANASONIC",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "REDRAGON",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "TUCANO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "SMARTBITT",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "Consultar pestaña"
+    },
+    {
+      "name": "ALTIGO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "CUISINART",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "PROCTOR SILEX",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "Consultar pestaña"
+    },
+    {
+      "name": "OSTER",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "CHARBROIL",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "TRIPP-LITE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "BRENTWOOD",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "DOLPHIN",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "AUDIOBOX",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "CONAIR",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "NVIDIA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "ASUS",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "EVGA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "HISENSE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "2 meses cubiertos por sinpel",
+      "contact": "nan"
+    },
+    {
+      "name": "SEAGATE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "WHIRLPOOL",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 año con la marca",
+      "contact": "0212-7201160"
+    },
+    {
+      "name": "PREMIER",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 mes cubierto por sinpel",
+      "contact": "nan"
+    },
+    {
+      "name": "ROYAL",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "FRIGIDAIRE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "WESTINGHOUSE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 Año con la marca",
+      "contact": "SUCURSALES EN CARACAS Y VALENCIA"
+    },
+    {
+      "name": "SJ ELECTRONICS",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "VARIA SEGÚN EL PRODUCTO",
+      "contact": "58 424-3705344"
+    },
+    {
+      "name": "WINIA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "DRIJA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 año de garantia con la marca",
+      "contact": "04243697867"
+    },
+    {
+      "name": "RCA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "Garantia con la marca según el producto",
+      "contact": "0412-6938696"
+    },
+    {
+      "name": "TCL",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "Garantia con la marca según el producto",
+      "contact": "TV Soporte 0800 - VIOTTO (0800 - 8468867)"
+    },
+    {
+      "name": "DECAKILA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "COBY",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "2 meses cubiertos por sinpel",
+      "contact": "nan"
+    },
+    {
+      "name": "GATAWEY",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "OMEGA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 Año de garantia con la marca",
+      "contact": "04243122832"
+    },
+    {
+      "name": "KITCHER",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "HOTLINE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 Año de garantia con la marca",
+      "contact": "0412-6938696"
+    },
+    {
+      "name": "REVLON",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 Año (Gestionada por sinpel)",
+      "contact": "Deben conservar la caja"
+    },
+    {
+      "name": "RUCHA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 Año (Gestionada por sinpel)",
+      "contact": "Deben conservar la caja"
+    },
+    {
+      "name": "REGMINTON",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "KENWOOD",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 Año con la marca",
+      "contact": "Ver pestaña de la marca"
+    },
+    {
+      "name": "ACER",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 Año con la marca",
+      "contact": "CARACAS (Tecnoasist): 0412-6378145 / 0212-9877223"
+    },
+    {
+      "name": "ALCATEL",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "ALPINE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "AMAZFIT",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "AMAZON",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "AOPEN",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "APPLE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "ART+COOK",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "ARTIC",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "BARKAN",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "BELLA LISS",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "BERGNER",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "BIZT",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "BLACK+DECKER",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "BARCELONA (CENTRO HERRAMIENTAS PLC CA): 0281-2711212/0281-2697610 /0412-9461388/0416-7823791 /30124039-1 | VALENCIA (COMERCIAL NOL CA): 0241-8573304 | VALENCIA (CORPORACION INTELIKORP C.A.): 0212-4521042 | FALCON (ELECTRODOMESTICOS FALCON CA): 0268-2531534 / 0424-6193359"
+    },
+    {
+      "name": "CHARGE 5",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "CRAYOLA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "DAHUA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "DE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "DELUX",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "ELECTROLUX",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "ELECTROSONIC",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "ENERGY",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "EXPLORE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "EXTREME 3",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "FORZA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "GATEWAY",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "GENERAL PATRON",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "GIGABYTE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "GOPRO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "GPLUS",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 Año con la marca",
+      "contact": "0800 - VIOTTO (0800 - 8468867)"
+    },
+    {
+      "name": "HACER",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "HARMAN KARDON",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "INFINIX",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 AÑO CON LA MARCA",
+      "contact": "(Global Fix Caracas)"
+    },
+    {
+      "name": "IROBOT",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "J5CREATE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "JAMO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "JASHEN",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "JVC",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "KINGSTON",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "KLIPSCH",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "KLIPXTREME",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "LAZIO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "LENOVO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "CARACAS (Centro Empresarial Senderos): +(58)424-2155032 (SOLO WS | CARACAS (Centro Empresarial Senderos): soporte@caslenovo.com"
+    },
+    {
+      "name": "MAGEFESA",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "MAGEFLON",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "MAGNAVOX",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "MARSRIVA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "MERCUSYS",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "META",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "MICROSOFT",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "MOMENTOP",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "MSI",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "NAKAMICHI",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "NEXXT",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "NINTENDO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "OFISAFAS",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "OLAX",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "OSTER",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "PATRIOT",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "PICKENS",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "PIONNER",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "POLARBOX",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "RAZER",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "RENEGADE",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "SEGWAY",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "SHARP",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "SIMPLE TV",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "SJ-ELECTRONICS",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "Garantia con la marca",
+      "contact": "0424-3705344"
+    },
+    {
+      "name": "TARGUS",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "TERMOLAR",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "TP-LINK",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "TRIPPLITE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "TUNDRA",
+      "storeWarranty": "nan",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "ULTIMATEC",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "U-PRODUCTS",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "VALE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "WAHL",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "WESTBEND",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "WINDMERE",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "XBOX",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "XTECH",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "YOOBAO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "ZOTAC",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "CHUWI",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 Año con la marca",
+      "contact": "nan"
+    },
+    {
+      "name": "KHALED",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 Año con la marca",
+      "contact": "0414-5921403"
+    },
+    {
+      "name": "VOLTATIC",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "MOONKI",
+      "storeWarranty": "3 Meses",
+      "brandWarranty": "cubierta por tienda",
+      "contact": "nan"
+    },
+    {
+      "name": "KITCHENAID",
+      "storeWarranty": "7 dias",
+      "brandWarranty": "nan",
+      "contact": "0212-7201160"
+    },
+    {
+      "name": "HONOR",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "1 año",
+      "contact": "nan"
+    },
+    {
+      "name": "REALME",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "1 AÑO CON LA MARCA",
+      "contact": "0412-9230797"
+    },
+    {
+      "name": "BI-TOSH",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "CUDY",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "HYUNDAI",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "NINJA",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "LASKO",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "MICELL",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "TECNO",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "PIONEER",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "POWERXL",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "REMINGTON",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "VIVO",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "TESLA",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "ZTE",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "GAMA",
+      "storeWarranty": "7 Días",
+      "brandWarranty": "1 a 2 años",
+      "contact": "SE REALIZA CAMBIO INMEDIATO POR FALLA (EN TIENDA)"
+    },
+    {
+      "name": "BLACK SHARK",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "GARMIN",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "UMIDIGI",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "YEZZ",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 AÑO",
+      "contact": "asesor10@yezzcorp.com (CONTACTAR DIRECTAMENTE POR CORREO)"
+    },
+    {
+      "name": "NUWE",
+      "storeWarranty": "15 DIAS",
+      "brandWarranty": "1 AÑO",
+      "contact": "MARCA PROPIA"
+    },
+    {
+      "name": "DENON",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "OONTZ",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "EGGO",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "nan",
+      "contact": "nan"
+    },
+    {
+      "name": "AIWA",
+      "storeWarranty": "7 DIAS",
+      "brandWarranty": "1 AÑO",
+      "contact": "VALENCIA (Alaservice): (+58) 241-8357376 / 8353180 | CARACAS (K-Rol): (+58) 412-7333792 | BARQUISIMETO (JJ2000/Refrielectronics): (+58) 424-5359207 / 5145935 | MARACAIBO (On Service): (+58) 261-6351414 / 424-6311989 | CABIMAS (San Francisco): (+58) 414-6347362 | BARINAS (Refriser 2011): (+58) 424-5327199 | MARGARITA (Servihogar/Telequip): 04123595178 | TÁCHIRA (U.R.M): (+58) 414-0759089 | MARACAY (Naba): (+58) 424-3336730 / 3047879 | VALERA (Refricol): (+58) 412-4393367 | SAN CARLOS (Servifrio): (+58) 412-7333792 | ATENCION AL CLIENTE (CENTRAL): (+58) 422-2492830 | CARACAS (4S Electronics): (+58) 424-1826999 | CARACAS (4S Team Service 2020, C.A.): (+58) 412-2444244"
+    },
+    {
+      "name": "JTC",
+      "storeWarranty": "7 DÍAS",
+      "brandWarranty": "1 año con la marca",
+      "contact": "0412-6938696"
+    }
+  ],
+  "propias": {
+    "SIRAGON": [
+      {
+        "producto": "Televisores",
+        "garantia_a": "1 Año",
+        "garantia_b": "3 meses"
+      },
+      {
+        "producto": "Laptop, Notebook y mini laptop",
+        "garantia_a": "1 Año",
+        "garantia_b": "3 meses"
+      },
+      {
+        "producto": "PC de Escritorio , All in One , Tablet",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Reguladores y UPS",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Accesorios",
+        "garantia_a": "nan",
+        "garantia_b": "nan"
+      },
+      {
+        "producto": "Servidores",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Aires Acondicionados",
+        "garantia_a": "1 Año",
+        "garantia_b": "6 meses"
+      },
+      {
+        "producto": "Electrodoméstico",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Lavadoras semiautomaticas",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Lavadoras y secadoras",
+        "garantia_a": "1 año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Sartén Eléctrico",
+        "garantia_a": "4 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Cocinas electricas, gas y dual",
+        "garantia_a": "1 año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Topes",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Campanas",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Hornos",
+        "garantia_a": "1 Año",
+        "garantia_b": "3 meses"
+      },
+      {
+        "producto": "Neveras",
+        "garantia_a": "1 Año",
+        "garantia_b": "6 meses"
+      },
+      {
+        "producto": "Altavoces",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Telefonia",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Congeladores",
+        "garantia_a": "1 Año",
+        "garantia_b": "6 meses"
+      },
+      {
+        "producto": "Licuadora",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Microondas",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Batidoras de Mano y Pedestal",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Parrilleras",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Ventiladores",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Arroceras",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Exhibidores",
+        "garantia_a": "1 Año",
+        "garantia_b": "6 meses"
+      },
+      {
+        "producto": "Monitores",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      }
+    ],
+    "SONEVIEW": [
+      {
+        "producto": "Televisores",
+        "garantia_a": "1 Año",
+        "garantia_b": "3 meses"
+      },
+      {
+        "producto": "Laptop, Notebook y mini laptop",
+        "garantia_a": "1 Año",
+        "garantia_b": "3 meses"
+      },
+      {
+        "producto": "PC de Escritorio , All in One , Tablet",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Reguladores y UPS",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Accesorios",
+        "garantia_a": "nan",
+        "garantia_b": "nan"
+      },
+      {
+        "producto": "Aires Acondicionados",
+        "garantia_a": "1 Año",
+        "garantia_b": "6 meses"
+      },
+      {
+        "producto": "Electrodoméstico",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Lavadoras semiautomaticas",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Lavadoras y secadoras",
+        "garantia_a": "1 año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Sartén Eléctrico",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Cocinas electricas, gas y dual",
+        "garantia_a": "1 año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Topes",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Campanas",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Hornos",
+        "garantia_a": "1 Año",
+        "garantia_b": "3 meses"
+      },
+      {
+        "producto": "Neveras",
+        "garantia_a": "1 Año",
+        "garantia_b": "6 meses"
+      },
+      {
+        "producto": "Altavoces",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Telefonia",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Congeladores",
+        "garantia_a": "1 Año",
+        "garantia_b": "6 meses"
+      },
+      {
+        "producto": "Licuadora",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Microondas",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Batidoras de Mano y Pedestal",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Parrilleras",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Ventiladores",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Arroceras",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Exhibidores",
+        "garantia_a": "1 Año",
+        "garantia_b": "6 meses"
+      },
+      {
+        "producto": "Monitores",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      }
+    ],
+    "ACCI": [
+      {
+        "producto": "Arroceras",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Olla de presión",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Freidoras de aire / Hornos Freidor",
+        "garantia_a": "4 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Batidoras de Mano y Pedestal",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Teteras",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Cafeteras (No incluye Jarra)",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Ventiladores",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Sandwicheras",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Extractores de Jugo",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Televisores",
+        "garantia_a": "1 Año",
+        "garantia_b": "3 meses"
+      },
+      {
+        "producto": "Hornos Empotrados",
+        "garantia_a": "1 Año",
+        "garantia_b": "3 meses"
+      },
+      {
+        "producto": "Exprimidor de Jugo",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Licuadora",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Parrilleras",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Telefonia",
+        "garantia_a": "1 Año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Accesorios",
+        "garantia_a": "nan",
+        "garantia_b": "nan"
+      },
+      {
+        "producto": "Altavoces",
+        "garantia_a": "6 meses",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Audífonos",
+        "garantia_a": "3 meses",
+        "garantia_b": "1 mes"
+      }
+    ],
+    "NUWE": [
+      {
+        "producto": "Protectores",
+        "garantia_a": "1 año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Mini Ups",
+        "garantia_a": "1 año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Ups",
+        "garantia_a": "1 año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Repetidores",
+        "garantia_a": "1 año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Mesh",
+        "garantia_a": "1 año",
+        "garantia_b": "1 mes"
+      },
+      {
+        "producto": "Routers",
+        "garantia_a": "1 año",
+        "garantia_b": "1 mes"
+      }
+    ]
+  }
+};
+
+        let currentStep = 0;
+        function openTutorial() {
+            currentStep = 0;
+            updateTutorialUI();
+            document.getElementById('tutorialOverlay').classList.add('active');
+        }
+
+        function closeTutorial() {
+            document.getElementById('tutorialOverlay').classList.remove('active');
+            localStorage.setItem('ivo_tutorial_seen', 'true');
+        }
+
+        function navStep(dir) {
+            currentStep += dir;
+            if (currentStep < 0) currentStep = 0;
+            if (currentStep > 3) {
+                closeTutorial();
+                return;
+            }
+            updateTutorialUI();
+        }
+
+        function updateTutorialUI() {
+            const steps = document.querySelectorAll('.tutorial-step');
+            const dots = document.querySelectorAll('.dot');
+            steps.forEach((s, i) => s.classList.toggle('active', i === currentStep));
+            dots.forEach((d, i) => d.classList.toggle('active', i === currentStep));
+            
+            document.getElementById('prevStep').style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+            document.getElementById('nextStep').innerText = currentStep === 3 ? 'Finalizar' : 'Siguiente';
+        }
+
+        function init() {
+            const saved = localStorage.getItem('ivo_db_esp_v6');
+            if (saved) {
+                db = JSON.parse(saved);
+            } else {
+                db = rawData.general;
+                localStorage.setItem('ivo_db_esp_v6', JSON.stringify(db));
+            }
+            propias = rawData.propias;
+
+            render(db);
+
+            if (!localStorage.getItem('ivo_tutorial_seen')) {
+                setTimeout(openTutorial, 1000);
+            }
+        }
+
+        const input = document.getElementById('searchInput');
+        input.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
+            if (!term) {
+                render(db);
+                return;
+            }
+            const filtered = db.filter(b => b.name.toLowerCase().includes(term));
+            render(filtered);
+        });
+
+        function render(items) {
+            const container = document.getElementById('results');
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No se encontraron resultados para su búsqueda.</p></div>';
+                return;
+            }
+
+            container.innerHTML = items.map(brand => {
+                const bName = brand.name.toUpperCase();
+                const isPropia = ['SIRAGON', 'SONEVIEW', 'ACCI', 'NUWE'].includes(bName);
+                let tableHtml = '';
+
+                if (isPropia && propias[bName]) {
+                    const rows = propias[bName].map(p => `
+                        <tr>
+                            <td>${p.producto}</td>
+                            <td>${p.garantia_a !== 'nan' ? p.garantia_a : '-'}</td>
+                            <td>${p.garantia_b !== 'nan' ? p.garantia_b : '-'}</td>
+                        </tr>
+                    `).join('');
+
+                    tableHtml = `
+                        <div class="table-container">
+                            <table class="detailed-table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Clase A</th>
+                                        <th>Clase B</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="card">
+                        <button class="btn-edit" onclick="editBrand('${brand.name}')" title="Editar Registro">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        <button class="btn-delete" onclick="deleteBrand('${brand.name}')" title="Eliminar Registro">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                        <div class="card-header">
+                            <h3 class="brand-name">${brand.name}</h3>
+                            <div class="warranty-badges">
+                                ${brand.storeWarranty !== 'nan' ? `<div class="badge">Tienda: ${brand.storeWarranty}</div>` : ''}
+                                ${brand.brandWarranty !== 'nan' ? `<div class="badge">Marca: ${brand.brandWarranty}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <h4>Soporte y Contacto</h4>
+                                ${brand.contact !== 'nan' ? 
+                                    (brand.contact.includes('|') ? 
+                                        `<ul class="contact-list">${brand.contact.split('|').map(item => {
+                                            const parts = item.split(':');
+                                            if (parts.length > 1) {
+                                                return `<li><strong>${parts[0].trim()}:</strong> ${parts.slice(1).join(':').trim()}</li>`;
+                                            }
+                                            return `<li>${item.trim()}</li>`;
+                                        }).join('')}</ul>` : 
+                                        `<p>${brand.contact}</p>`) : 
+                                    '<p>No especificado</p>'}
+                            </div>
+                            <div class="info-item">
+                                <h4>Tipo de Marca</h4>
+                                <p>${isPropia ? 'Marca Propia IVOO' : 'Distribución Externa'}</p>
+                            </div>
+                        </div>
+                        ${tableHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        let contactMode = 'simple';
+
+        function setContactMode(mode) {
+            contactMode = mode;
+            document.getElementById('contactSimple').style.display = mode === 'simple' ? 'block' : 'none';
+            document.getElementById('contactBranches').style.display = mode === 'branches' ? 'block' : 'none';
+            document.getElementById('toggleSimple').classList.toggle('active', mode === 'simple');
+            document.getElementById('toggleBranches').classList.toggle('active', mode === 'branches');
+            if (mode === 'branches' && document.getElementById('branchList').children.length === 0) {
+                addBranchRow();
+            }
+        }
+
+        function addBranchRow(city='', phone='') {
+            const list = document.getElementById('branchList');
+            const row = document.createElement('div');
+            row.className = 'branch-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Ej: VALENCIA (Alaservice)" value="${city}">
+                <input type="text" placeholder="Ej: (+58) 241-8357376" value="${phone}">
+                <button type="button" class="btn-remove-branch" onclick="this.parentElement.remove()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            `;
+            list.appendChild(row);
+        }
+
+        function getContactValue() {
+            if (contactMode === 'simple') {
+                return document.getElementById('m-obs').value.trim() || 'nan';
+            } else {
+                const rows = document.querySelectorAll('#branchList .branch-row');
+                const parts = [];
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    const city = inputs[0].value.trim();
+                    const phone = inputs[1].value.trim();
+                    if (city || phone) {
+                        parts.push(`${city}: ${phone}`);
+                    }
+                });
+                return parts.length > 0 ? parts.join(' | ') : 'nan';
+            }
+        }
+
+        function loadContactIntoModal(contact) {
+            if (contact !== 'nan' && contact.includes('|')) {
+                setContactMode('branches');
+                document.getElementById('branchList').innerHTML = '';
+                contact.split('|').forEach(part => {
+                    const colonIdx = part.indexOf(':');
+                    if (colonIdx !== -1) {
+                        const city = part.substring(0, colonIdx).trim();
+                        const phone = part.substring(colonIdx + 1).trim();
+                        addBranchRow(city, phone);
+                    } else {
+                        addBranchRow(part.trim(), '');
+                    }
+                });
+            } else {
+                setContactMode('simple');
+                document.getElementById('m-obs').value = contact !== 'nan' ? contact : '';
+            }
+        }
+
+        function resetModal() {
+            document.getElementById('brandForm').reset();
+            document.getElementById('branchList').innerHTML = '';
+            setContactMode('simple');
+        }
+
+        function checkAuth() {
+            const p = prompt('Ingrese contraseña administrativa:');
+            if (p === PASS) {
+                editingBrandName = null;
+                document.getElementById('modalTitle').innerText = 'Nueva Marca';
+                resetModal();
+                document.getElementById('modalOverlay').classList.add('active');
+            } else if(p !== null) {
+                alert('Acceso Denegado.');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            editingBrandName = null;
+        }
+
+        function editBrand(name) {
+            const p = prompt(`Para editar la marca "${name}", ingrese contraseña:`);
+            if (p === PASS) {
+                const brand = db.find(b => b.name === name);
+                if (!brand) return alert('Marca no encontrada.');
+                
+                editingBrandName = name;
+                document.getElementById('modalTitle').innerText = 'Editar Marca';
+                document.getElementById('m-name').value = brand.name;
+                document.getElementById('m-store').value = brand.storeWarranty === 'nan' ? '' : brand.storeWarranty;
+                document.getElementById('m-brand').value = brand.brandWarranty === 'nan' ? '' : brand.brandWarranty;
+                loadContactIntoModal(brand.contact || 'nan');
+                
+                document.getElementById('modalOverlay').classList.add('active');
+            } else if (p !== null) {
+                alert('Contraseña incorrecta.');
+            }
+        }
+
+        function saveBrand(e) {
+            e.preventDefault();
+            const nameVal = document.getElementById('m-name').value.toUpperCase().trim();
+            const storeVal = document.getElementById('m-store').value.trim() || 'nan';
+            const brandVal = document.getElementById('m-brand').value.trim() || 'nan';
+            const contactVal = getContactValue();
+
+            if (editingBrandName) {
+                const index = db.findIndex(b => b.name === editingBrandName);
+                if (index !== -1) {
+                    db[index] = {
+                        name: nameVal,
+                        storeWarranty: storeVal,
+                        brandWarranty: brandVal,
+                        contact: contactVal
+                    };
+                    if (editingBrandName !== nameVal && propias[editingBrandName]) {
+                        propias[nameVal] = propias[editingBrandName];
+                        delete propias[editingBrandName];
+                    }
+                }
+                localStorage.setItem('ivo_db_esp_v6', JSON.stringify(db));
+                closeModal();
+                const term = document.getElementById('searchInput').value.toLowerCase().trim();
+                if (term) {
+                    render(db.filter(b => b.name.toLowerCase().includes(term)));
+                } else {
+                    render(db.filter(b => b.name === nameVal));
+                }
+                alert('¡Marca actualizada con éxito!');
+            } else {
+                const newB = {
+                    name: nameVal,
+                    storeWarranty: storeVal,
+                    brandWarranty: brandVal,
+                    contact: contactVal
+                };
+                db.unshift(newB);
+                localStorage.setItem('ivo_db_esp_v6', JSON.stringify(db));
+                closeModal();
+                render(db.filter(b => b.name.includes(newB.name)));
+                alert('¡Marca agregada con éxito!');
+            }
+        }
+
+        function deleteBrand(name) {
+            const p = prompt(`Para eliminar la marca "${name}", ingrese contraseña:`);
+            if (p === PASS) {
+                if (confirm(`¿Está seguro de que desea eliminar permanentemente a "${name}"?`)) {
+                    db = db.filter(b => b.name !== name);
+                    localStorage.setItem('ivo_db_esp_v6', JSON.stringify(db));
+                    const term = document.getElementById('searchInput').value.toLowerCase().trim();
+                    render(db.filter(b => b.name.toLowerCase().includes(term)));
+                    alert('Registro eliminado correctamente.');
+                }
+            } else if (p !== null) {
+                alert('Contraseña incorrecta.');
+            }
+        }
+
+        function exportToExcel() {
+            try {
+                const mainSheetData = db.map(b => ({
+                    "Marca": b.name,
+                    "Garantía Tienda": b.storeWarranty !== 'nan' ? b.storeWarranty : '-',
+                    "Garantía Marca": b.brandWarranty !== 'nan' ? b.brandWarranty : '-',
+                    "Contacto/Notas": b.contact !== 'nan' ? b.contact : '-'
+                }));
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(mainSheetData), "Garantías Generales");
+                Object.keys(propias).forEach(brand => {
+                    const detailData = propias[brand].map(p => ({
+                        "Producto": p.producto,
+                        "Garantía Clase A": p.garantia_a !== 'nan' ? p.garantia_a : '-',
+                        "Garantía Clase B": p.garantia_b !== 'nan' ? p.garantia_b : '-'
+                    }));
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailData), "Detalle " + brand);
+                });
+                XLSX.writeFile(wb, "Directorio_Garantias_IVOO.xlsx");
+            } catch (err) { alert("Error al exportar."); }
+        }
+
+        function generateShareableVersion() {
+            const p = prompt('Ingrese clave para generar versión compartible (Final):');
+            if (p !== PASS) return alert('No autorizado.');
+            
+            const currentHtml = document.documentElement.outerHTML;
+            const updatedData = JSON.stringify({ general: db, propias: propias }, null, 2);
+            
+            const dataRegex = /const rawData = \{[\s\S]*?\};/;
+            const newFileContent = currentHtml.replace(dataRegex, `const rawData = ${updatedData};`);
+            
+            const today = new Date();
+            const d = String(today.getDate()).padStart(2,'0');
+            const m = String(today.getMonth()+1).padStart(2,'0');
+            const y = today.getFullYear();
+            const fileName = `Directorio_Garantias_FINAL_${d}-${m}-${y}.html`;
+
+            const blob = new Blob([newFileContent], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            alert(`✅ Archivo guardado en tu carpeta de Descargas:\n${fileName}\n\n📂 Muévelo a donde quieras abrirlo sin que aparezca la ruta del proyecto.`);
+        }
+
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.onkeydown = function(e) {
+            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) {
+                return false;
+            }
+        };
+
+        init();
+    </script>
+
+
+</div></body></html>
