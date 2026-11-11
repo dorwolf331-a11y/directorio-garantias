@@ -416,29 +416,29 @@
 
         <div id="results" class="results-grid">
                     <div class="card">
-                        <button class="btn-edit" onclick="editBrand('HOTWAV')" title="Editar Registro">
+                        <button class="btn-edit" onclick="editBrand('JBL')" title="Editar Registro">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                 <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                             </svg>
                         </button>
-                        <button class="btn-delete" onclick="deleteBrand('HOTWAV')" title="Eliminar Registro">
+                        <button class="btn-delete" onclick="deleteBrand('JBL')" title="Eliminar Registro">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="3 6 5 6 21 6"></polyline>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                             </svg>
                         </button>
                         <div class="card-header">
-                            <h3 class="brand-name">HOTWAV</h3>
+                            <h3 class="brand-name">JBL</h3>
                             <div class="warranty-badges">
                                 <div class="badge">Tienda: 7 DIAS (CAMBIO INMEDIATO)</div>
-                                <div class="badge">Marca: (6 MESES DE GARANTIA POR TIENDA EN CUANTO A RMA)</div>
+                                <div class="badge">Marca: (3 MESES DE GARANTIA POR TIENDA EN CUANTO A RMA)</div>
                             </div>
                         </div>
                         <div class="info-grid">
                             <div class="info-item">
                                 <h4>Soporte y Contacto</h4>
-                                <ul class="contact-list"><li><strong>Caracas (City Cell Store):</strong> +58 412-5463043</li><li><strong>Soporte Global Hotwav:</strong> support@hotwav.com</li><li><strong>Plataforma Web Oficial:</strong> Soporte HOTWAV Latam</li></ul>
+                                <ul class="contact-list"><li><strong>SITIO WEB (SOPORTE TECNICO):</strong> @mediajbl</li><li><strong>SITIO WEB (SOPORTE TECNICO):</strong> https://magnadomo.com/jbl-profesional-venezuela/</li></ul>
                             </div>
                             <div class="info-item">
                                 <h4>Tipo de Marca</h4>
@@ -485,20 +485,14 @@
                             <span></span>
                         </div>
                         <div class="branch-list" id="branchList"><div class="branch-row">
-                <input type="text" placeholder="Ej: VALENCIA (Alaservice)" value="Caracas (City Cell Store)">
-                <input type="text" placeholder="Ej: (+58) 241-8357376" value="+58 412-5463043">
+                <input type="text" placeholder="Ej: VALENCIA (Alaservice)" value="SITIO WEB (SOPORTE TECNICO)">
+                <input type="text" placeholder="Ej: (+58) 241-8357376" value="@mediajbl">
                 <button type="button" class="btn-remove-branch" onclick="this.parentElement.remove()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div><div class="branch-row">
-                <input type="text" placeholder="Ej: VALENCIA (Alaservice)" value="Soporte Global Hotwav">
-                <input type="text" placeholder="Ej: (+58) 241-8357376" value="support@hotwav.com">
-                <button type="button" class="btn-remove-branch" onclick="this.parentElement.remove()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div><div class="branch-row">
-                <input type="text" placeholder="Ej: VALENCIA (Alaservice)" value="Plataforma Web Oficial">
-                <input type="text" placeholder="Ej: (+58) 241-8357376" value="Soporte HOTWAV Latam">
+                <input type="text" placeholder="Ej: VALENCIA (Alaservice)" value="SITIO WEB (SOPORTE TECNICO)">
+                <input type="text" placeholder="Ej: (+58) 241-8357376" value="https://magnadomo.com/jbl-profesional-venezuela/">
                 <button type="button" class="btn-remove-branch" onclick="this.parentElement.remove()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
@@ -573,6 +567,30 @@
 
         const rawData = {
   "general": [
+    {
+      "name": "PECRON",
+      "storeWarranty": "7 DIAS (CAMBIO INMEDIATO)",
+      "brandWarranty": "(6 MESES DE GARANTIA POR TIENDA EN CUANTO A RMA)",
+      "contact": "+1 888 906 5997 (lun a vier, de 9:00 a. m. a 5:00 p. m. EST)"
+    },
+    {
+      "name": "HAVIT",
+      "storeWarranty": "7 DIAS (CAMBIO INMEDIATO)",
+      "brandWarranty": "(6 MESES DE GARANTIA POR TIENDA EN CUANTO A RMA)",
+      "contact": "nan"
+    },
+    {
+      "name": "HONOR",
+      "storeWarranty": "7 DIAS (CAMBIO INMEDIATO)",
+      "brandWarranty": "1 AÑO DE GARANTIA POR LA MARCA",
+      "contact": "CARACAS (HONOR SERVICE): (58) 412-9970103 | VALENCIA (Honor Store Venezuela): (58) 412-7550340"
+    },
+    {
+      "name": "ECOFLOW",
+      "storeWarranty": "7 DIAS (CAMBIO INMEDIATO)",
+      "brandWarranty": "(6 MESES DE GARANTIA POR TIENDA EN CUANTO A RMA)",
+      "contact": "https://totalynk.com/garantias-ecoflow"
+    },
     {
       "name": "HOTWAV",
       "storeWarranty": "7 DIAS (CAMBIO INMEDIATO)",
@@ -683,9 +701,9 @@
     },
     {
       "name": "JBL",
-      "storeWarranty": "7 DIAS",
-      "brandWarranty": "7 DIAS",
-      "contact": "Consultar pestaña"
+      "storeWarranty": "7 DIAS (CAMBIO INMEDIATO)",
+      "brandWarranty": "(3 MESES DE GARANTIA POR TIENDA EN CUANTO A RMA)",
+      "contact": "SITIO WEB (SOPORTE TECNICO): @mediajbl | SITIO WEB (SOPORTE TECNICO): https://magnadomo.com/jbl-profesional-venezuela/"
     },
     {
       "name": "LINKSYS",
